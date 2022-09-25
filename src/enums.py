@@ -10,20 +10,6 @@ class Size(Enum):
     LARGE = 3
 
 
-class VehicleSize(Enum):
-    """
-    Enum class for vehicle sizes
-    """
-    pass
-#
-#
-# class SlotSize(Size):
-#     """
-#     Enum class for parking slot sizes
-#     """
-#     pass
-
-
 class EntryPoint(Enum):
     """
     Enum class for the entrypoints
