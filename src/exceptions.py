@@ -6,3 +6,8 @@ class NoMoreAvailableSpot(Exception):
 class VehicleNotParked(Exception):
     """Raised when unparking a vehicle that is not parked"""
     pass
+
+
+class InvalidEntryPoint(Exception):
+    """Raised when a vehicle enters in an invalid entrypoint"""
+    pass

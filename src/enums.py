@@ -17,6 +17,8 @@ class EntryPoint(Enum):
     A = 0
     B = 1
     C = 2
+    D = 4
+    E = 5
 
 
 class Rates(Enum):
@@ -35,3 +37,4 @@ class Hours(Enum):
     """
     WITHIN_FLAT_RATE = 3
     WITHIN_CONTINUOUS = 1
+    IN_A_DAY = 24
