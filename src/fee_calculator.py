@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from src.vehicles import Vehicle
+from src.vehicles import ParkingVehicle
 from src.enums import Rates, Hours
+from src.exceptions import FeeCannotBeCalculated
 
 from math import ceil
 
@@ -15,13 +16,17 @@ class ParkingFeeCalculator(FeeCalculator):
     def __init__(self, flat_rate=40):
         self._flat_rate = flat_rate
 
-    def calculate_fee(self, vehicle: Vehicle):
+    def calculate_fee(self, vehicle: ParkingVehicle):
         """
         A function that calculates the total parking fee of the vehicle object
         :param vehicle: the Vehicle object
         :return: the total parking fee of the vehicle object
         """
         total_fee = 0
+
+        if vehicle.date_of_entry is None or vehicle.date_of_exit is None:
+            raise FeeCannotBeCalculated("Parking fee cannot be calculated. The vehicle must contain a date of entry "
+                                        "and a date of exit.")
 
         time_diff_last_parked = vehicle.date_of_exit - vehicle.date_of_entry
         exceeding_days = time_diff_last_parked.days
