@@ -169,7 +169,7 @@ class AutomatedParkingLot(ParkingLot):
 
         return nearest_slot
 
-    def unpark_vehicle(self, vehicle: ParkingVehicle, date_of_exit: datetime = datetime.now()):
+    def unpark_vehicle(self, vehicle: Vehicle, date_of_exit: datetime = datetime.now()):
         """
         A function that unparks a vehicle object from it's parking slot and modifies the vehicle entry
         within the db.
@@ -177,9 +177,6 @@ class AutomatedParkingLot(ParkingLot):
         :param date_of_exit: the date the vehicle left the parking slot
         :return: the total parking fee for the vehicle
         """
-        if not isinstance(vehicle, ParkingVehicle):
-            raise VehicleIsNotAParkingVehicleObject("The vehicle is not a ParkingVehicle object.")
-
         vehicle_query = session.query(self._polymorphic_vehicle).filter(self._polymorphic_vehicle.license_plate
                                                                         == vehicle.license_plate)
         parked_vehicle = vehicle_query.one()
