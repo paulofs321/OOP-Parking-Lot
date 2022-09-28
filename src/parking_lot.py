@@ -29,6 +29,14 @@ class AutomatedParkingLot(ParkingLot):
     available spot to a vehicle based on the entrypoint.
     """
     def __init__(self, parking_map: dict, num_of_entrypoints=3):
+        """
+        Constructor for the AutomatedParkingLot class
+
+        :param parking_map: a dictionary that contains the mapping of the parking lot. Must contain a list
+        of slot_sizes, a list of tuples where the entries in the tuple correspond to the distance from entrypoints,
+        and a list of the possible entrypoints.
+        :param num_of_entrypoints: the minimum number of entrypoints for the parking lot
+        """
         self._num_of_entrypoints = num_of_entrypoints
         self._parking_map = parking_map
         self._fee_calculator = ParkingFeeCalculator(flat_rate=40)
@@ -195,8 +203,8 @@ class AutomatedParkingLot(ParkingLot):
 
         session.delete(parked_vehicle.slot)
 
-        self._parking_slots[slot_id].isempty = True
-        self._parking_slots[slot_id].vehicle = None  # empty the parking slot
+        self._parking_slots[slot_id].isempty = True  # empty the parking slot
+        #self._parking_slots[slot_id].vehicle = None
 
         vehicle_query.update({
             ParkingVehicle.date_of_exit: date_of_exit,
