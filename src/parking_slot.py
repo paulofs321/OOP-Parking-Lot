@@ -1,4 +1,4 @@
-from src.vehicles import Vehicle
+from src.vehicles import Vehicle, ParkingVehicle
 from src.enums import Size
 from src.db import Base
 
@@ -16,7 +16,7 @@ class ParkingSlot(Base):
     slot_id = Column(Integer, primary_key=True)
     vehicle_plate = Column(String, ForeignKey(Vehicle.license_plate))
     size = Column(Enum(Size))
-    vehicle = relationship("Vehicle", back_populates="slot")
+    vehicle = relationship("ParkingVehicle", back_populates="slot")
 
     def __init__(self, slot_id: int, size: Size, distances: tuple, vehicle: Vehicle = None):
         super(ParkingSlot, self).__init__(slot_id=slot_id, vehicle=vehicle, size=size)
@@ -37,4 +37,8 @@ class ParkingSlot(Base):
 
     @isempty.setter
     def isempty(self, flag: bool):
+        if flag is True:
+            self.vehicle = None
+
         self._isempty = flag
+
