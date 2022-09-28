@@ -52,9 +52,9 @@ class TestParkingLot:
     def test_park_vehicle(self, session):
         parking_lot = AutomatedParkingLot(self.parking_map)
 
-        vehicle_small = ParkingVehicle(size=Size.SMALL, license_plate="ABC456")
-        vehicle_medium = ParkingVehicle(size=Size.MEDIUM, license_plate="MED123")
-        vehicle_large = ParkingVehicle(size=Size.LARGE, license_plate="LRG123")
+        vehicle_small = SmallParkingVehicle(license_plate="ABC456")
+        vehicle_medium = MediumParkingVehicle(license_plate="MED123")
+        vehicle_large = LargeParkingVehicle(license_plate="LRG123")
 
         slot_1 = parking_lot.park_vehicle(vehicle_small, EntryPoint.A, datetime(2022, 9, 25, 15, 30))
         slot_2 = parking_lot.park_vehicle(vehicle_medium, EntryPoint.B, datetime(2022, 9, 25, 15, 30))
@@ -94,7 +94,7 @@ class TestParkingLot:
     def test_unpark_vehicle(self, session):
         parking_lot = AutomatedParkingLot(self.parking_map)
 
-        vehicle = ParkingVehicle(Size.SMALL, "SML123")
+        vehicle = SmallParkingVehicle("SML123")
 
         parking_lot.park_vehicle(vehicle, EntryPoint.A, datetime(2022, 9, 25, 15, 30))
         total_fee = parking_lot.unpark_vehicle(vehicle, datetime(2022, 9, 25, 16, 30))
@@ -115,7 +115,7 @@ class TestParkingLot:
         assert vehicle.flat_rate_hours == 0
 
         vehicle_in_medium_slot = ParkingVehicle(Size.MEDIUM, "QWE123")
-        vehicle_in_large_slot = ParkingVehicle(Size.LARGE, "QWE234")
+        vehicle_in_large_slot = LargeParkingVehicle("QWE234")
 
         parking_lot.park_vehicle(vehicle, EntryPoint.A, datetime(2022, 9, 25, 18, 30))
         parking_lot.park_vehicle(vehicle_in_medium_slot, EntryPoint.B, datetime(2022, 9, 25, 18, 30))
