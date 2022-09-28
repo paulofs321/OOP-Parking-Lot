@@ -1,58 +1,94 @@
+import sqlite3
+
 import sqlalchemy.exc
 
-from src.vehicles import Vehicle, Base
-from src.parking_lot import ParkingLot
-from src.parking_slot import ParkingSlot
-from src.enums import VehicleSize, EntryPoint, Rates, Size
-from src.db import engine, session
+from src.vehicles import ParkingVehicle, Base
+from src.parking_lot import AutomatedParkingLot
+from src.enums import EntryPoint, Size
+from src.db import engine
 
 import datetime
 
+Base.metadata.create_all(engine)
+
+slots = [Size.SMALL, Size.LARGE, Size.MEDIUM, Size.SMALL, Size.MEDIUM, Size.LARGE]
+distances = [(1, 2, 3), (1, 3, 2), (3, 2, 1), (2, 1, 3), (3, 1, 2), (2, 3, 1)]
+entrypoints = [EntryPoint.A, EntryPoint.B, EntryPoint.C]
+
+parking_map = {
+    "slot_sizes": slots,
+    "distances": distances,
+    "entrypoints": entrypoints
+}
+
+parking_lot = AutomatedParkingLot(parking_map)
+
+
+def entry_point_prompt():
+    while True:
+        entrypoint = input("Please enter the entrypoint (A/B/C): ")
+
+        try:
+            entrypoint = EntryPoint[entrypoint.upper()]
+            return entrypoint
+        except Exception as e:
+            print("Invalid entrypoint, please try again.")
+
+
+def date_prompt():
+    while True:
+        date_of_entry = input("Please enter the date (YYYY-MM-DD HH:MM): ")
+
+        try:
+            date_of_entry = datetime.datetime.strptime(date_of_entry, "%Y-%m-%d %H:%M")
+            return date_of_entry
+        except KeyError:
+            print("Invalid date format, please try again.")
+
+
+def size_prompt():
+    while True:
+        size = input("Enter the size of the vehicle (Small/Medium/Large): ")
+
+        try:
+            size = Size[size.upper()]
+            return size
+        except KeyError:
+            print("Invalid size, please try again.")
+
+
+def prompt(action):
+    if action.lower() not in ["park", "unpark"]:
+        print("Invalid action input, please try again.")
+        return
+
+    license_plate = input("Enter the license plate of the vehicle: ")
+    size = size_prompt()
+    vehicle = ParkingVehicle(size, license_plate)
+
+    date = date_prompt()
+
+    if action.lower() == "park":
+        entrypoint = entry_point_prompt()
+        try:
+            slot = parking_lot.park_vehicle(vehicle, entrypoint, date)
+            print(f"Successfully parked the vehicle with license plate {vehicle.license_plate} in slot {slot.slot_id}")
+        except Exception as e:
+            print(e)
+    elif action.lower() == "unpark":
+        try:
+            total_fee = parking_lot.unpark_vehicle(vehicle, date)
+            print(f"Successfully unparked the vehicle with license plate {vehicle.license_plate} "
+                  f"with a total fee of {total_fee}")
+        except Exception as e:
+            print(e)
+
 
 def main():
-    Base.metadata.create_all(engine)
-    car = Vehicle(Size.LARGE, "ABC135")
-    car2 = Vehicle(Size.LARGE, "ABC136")
-    car3 = Vehicle(Size.MEDIUM, "ABC137")
-    car4 = Vehicle(Size.SMALL, "ABC138")
-
-    slots = [Size.SMALL, Size.SMALL, Size.MEDIUM, Size.MEDIUM, Size.LARGE, Size.LARGE]
-    distances = [(1, 2, 3), (1, 3, 2), (3, 2, 1), (2, 1, 3), (3, 1, 2), (2, 3, 1)]
-
-    parking_lot = ParkingLot(slots, distances)
-
-    parking_lot.park_vehicle(car, EntryPoint.C, datetime.datetime(2022, 9, 26, 12, 0))
-    parking_lot.park_vehicle(car2, EntryPoint.C, datetime.datetime(2022, 9, 26, 12, 0))
-    parking_lot.park_vehicle(car3, EntryPoint.C, datetime.datetime(2022, 9, 26, 12, 0))
-    parking_lot.park_vehicle(car4, EntryPoint.C, datetime.datetime(2022, 9, 26, 12, 0))
-
-    #print(car.slot)
-    for slot in parking_lot.parking_slots:
-        if not slot.isempty:
-            #print(slot.slot_id, Rates[Size(slot.size).name])
-            parking_lot.unpark_vehicle(slot.vehicle, datetime.datetime(2022, 9, 26, 15, 30))
-            # parking_lot.unpark_vehicle(car2, datetime.datetime(2022, 9, 26, 0, 30))
-            # parking_lot.unpark_vehicle(car3, datetime.datetime(2022, 9, 26, 0, 30))
-            # parking_lot.unpark_vehicle(car4, datetime.datetime(2022, 9, 26, 0, 30))
-
-
-
-
-    #print(car.__dict__)
-    #
-    # print("After leaving")
-    # print(slot.vehicle)
-    # print(car.__dict__)
-    # for slot in parking_lot._parking_slots:
-    #     print(slot.__dict__)
-    # print(parking_lot._parking_slots[5].vehicle_plate)
-    # print(slot.__dict__)
-
-    # #print(car._size)
-    # #quer = session.query(Vehicle).filter(Vehicle.license_plate == "ABC123").one_or_none()
-    #
-    # session.add(car)
-    # session.commit()
+    print("Welcome to the OOP Parking Lot!")
+    while True:
+        action = input("Please select an action (park/unpark): ")
+        prompt(action)
 
 
 if __name__ == '__main__':
