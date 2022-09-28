@@ -11,3 +11,8 @@ class VehicleNotParked(Exception):
 class InvalidEntryPoint(Exception):
     """Raised when a vehicle enters in an invalid entrypoint"""
     pass
+
+
+class VehicleAlreadyParked(Exception):
+    """Raised when parking a vehicle that is already parked"""
+    pass
