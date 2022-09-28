@@ -16,3 +16,13 @@ class InvalidEntryPoint(Exception):
 class VehicleAlreadyParked(Exception):
     """Raised when parking a vehicle that is already parked"""
     pass
+
+
+class FeeCannotBeCalculated(Exception):
+    """Raised when a fee cannot be calculated"""
+    pass
+
+
+class VehicleIsNotAParkingVehicleObject(Exception):
+    """Raised when a vehicle is not an instance of ParkingVehicleObject"""
+    pass
