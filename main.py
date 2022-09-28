@@ -1,8 +1,6 @@
-import sqlite3
+"""A simple interactive cmdline program for the Parking Lot system"""
 
-import sqlalchemy.exc
-
-from src.vehicles import ParkingVehicle, Base
+from src.vehicles import Vehicle, ParkingVehicle, Base
 from src.parking_lot import AutomatedParkingLot
 from src.enums import EntryPoint, Size
 from src.db import engine
@@ -63,12 +61,11 @@ def prompt(action):
         return
 
     license_plate = input("Enter the license plate of the vehicle: ")
-    size = size_prompt()
-    vehicle = ParkingVehicle(size, license_plate)
-
     date = date_prompt()
 
     if action.lower() == "park":
+        size = size_prompt()
+        vehicle = ParkingVehicle(size, license_plate)
         entrypoint = entry_point_prompt()
         try:
             slot = parking_lot.park_vehicle(vehicle, entrypoint, date)
@@ -77,6 +74,7 @@ def prompt(action):
             print(e)
     elif action.lower() == "unpark":
         try:
+            vehicle = Vehicle(license_plate=license_plate)
             total_fee = parking_lot.unpark_vehicle(vehicle, date)
             print(f"Successfully unparked the vehicle with license plate {vehicle.license_plate} "
                   f"with a total fee of {total_fee}")
