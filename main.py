@@ -35,11 +35,15 @@ def entry_point_prompt():
 
 def date_prompt():
     while True:
-        date_of_entry = input("Please enter the date (YYYY-MM-DD HH:MM): ")
+        date = input("Please enter the date (YYYY-MM-DD HH:MM): ")
+
+        if date == "":
+            date = datetime.datetime.now()
+            return date
 
         try:
-            date_of_entry = datetime.datetime.strptime(date_of_entry, "%Y-%m-%d %H:%M")
-            return date_of_entry
+            date = datetime.datetime.strptime(date, "%Y-%m-%d %H:%M")
+            return date
         except KeyError:
             print("Invalid date format, please try again.")
 
