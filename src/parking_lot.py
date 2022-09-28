@@ -33,7 +33,7 @@ class AutomatedParkingLot(ParkingLot):
         self._parking_map = parking_map
         self._fee_calculator = ParkingFeeCalculator(flat_rate=40)
         self._parking_slots = self._initialize_parking_slots()
-        self._polymorphic_vehicle = with_polymorphic(ParkingVehicle, '*')
+        self._polymorphic_vehicle = with_polymorphic(Vehicle, '*')
 
     @property
     def parking_slots(self):
@@ -116,16 +116,19 @@ class AutomatedParkingLot(ParkingLot):
 
         return None
 
-    def park_vehicle(self, vehicle: Vehicle, entrypoint: EntryPoint = EntryPoint.A,
+    def park_vehicle(self, vehicle: ParkingVehicle, entrypoint: EntryPoint = EntryPoint.A,
                      date_of_entry: datetime = datetime.now()):
         """
         A function that parks a vehicle object to the nearest parking spot and adds the vehicle to the
         db
-        :param vehicle: the Vehicle object
+        :param vehicle: the ParkingVehicle object
         :param entrypoint: the entrypoint where the vehicle came in
         :param date_of_entry: the date the vehicle came into the parking lot
         :return: the assigned ParkingSlot object for the vehicle
         """
+        if not isinstance(vehicle, ParkingVehicle):
+            raise VehicleIsNotAParkingVehicleObject("The vehicle is not a ParkingVehicle object.")
+
         nearest_slot = self._find_nearest_slot(vehicle.size, entrypoint)
 
         if nearest_slot is None:
@@ -166,14 +169,17 @@ class AutomatedParkingLot(ParkingLot):
 
         return nearest_slot
 
-    def unpark_vehicle(self, vehicle: Vehicle, date_of_exit: datetime = datetime.now()):
+    def unpark_vehicle(self, vehicle: ParkingVehicle, date_of_exit: datetime = datetime.now()):
         """
         A function that unparks a vehicle object from it's parking slot and modifies the vehicle entry
         within the db.
-        :param vehicle: the Vehicle object
+        :param vehicle: the ParkingVehicle object
         :param date_of_exit: the date the vehicle left the parking slot
         :return: the total parking fee for the vehicle
         """
+        if not isinstance(vehicle, ParkingVehicle):
+            raise VehicleIsNotAParkingVehicleObject("The vehicle is not a ParkingVehicle object.")
+
         vehicle_query = session.query(self._polymorphic_vehicle).filter(self._polymorphic_vehicle.license_plate
                                                                         == vehicle.license_plate)
         parked_vehicle = vehicle_query.one()
