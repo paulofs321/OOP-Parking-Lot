@@ -6,7 +6,7 @@ engine = create_engine(
     "sqlite:///parking_lot.db",
 )
 
-Session = sessionmaker(bind=engine, autoflush=False)
+Session = sessionmaker(bind=engine)
 session = Session()
 
 Base = declarative_base()
