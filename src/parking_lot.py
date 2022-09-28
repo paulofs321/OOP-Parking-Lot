@@ -28,7 +28,7 @@ class AutomatedParkingLot(ParkingLot):
     A class for an automated parking lot that automatically assigns the nearest possible and
     available spot to a vehicle based on the entrypoint.
     """
-    def __init__(self, parking_map: dict, num_of_entrypoints=3):
+    def __init__(self, parking_map: dict, num_of_entrypoints=3, fee_calculator=ParkingFeeCalculator(flat_rate=40)):
         """
         Constructor for the AutomatedParkingLot class
 
@@ -36,10 +36,11 @@ class AutomatedParkingLot(ParkingLot):
         of slot_sizes, a list of tuples where the entries in the tuple correspond to the distance from entrypoints,
         and a list of the possible entrypoints.
         :param num_of_entrypoints: the minimum number of entrypoints for the parking lot
+        :param fee_calculator: the FeeCalculator object that will be used to calculate fees
         """
         self._num_of_entrypoints = num_of_entrypoints
         self._parking_map = parking_map
-        self._fee_calculator = ParkingFeeCalculator(flat_rate=40)
+        self._fee_calculator = fee_calculator
         self._parking_slots = self._initialize_parking_slots()
         self._polymorphic_vehicle = with_polymorphic(Vehicle, '*')
 
@@ -70,7 +71,7 @@ class AutomatedParkingLot(ParkingLot):
 
         slot_sizes = parking_map["slot_sizes"]
         distances = parking_map["distances"]
-        entrypoints = parking_map["entrypoints"]
+        entrypoints = sorted(parking_map["entrypoints"], key=lambda x: x.value)
 
         if any(len(distance) != self._num_of_entrypoints for distance in distances):
             raise ValueError("Invalid number of distances for number of entrypoints.")
@@ -80,6 +81,9 @@ class AutomatedParkingLot(ParkingLot):
 
         if len(entrypoints) < self._num_of_entrypoints:
             raise ValueError(f"The number of entrypoints can't be less than {self._num_of_entrypoints}")
+
+        if any(entrypoints[i].value + 1 != entrypoints[i + 1].value for i in range(len(entrypoints) - 1)):
+            raise ValueError(f"The entrypoints must be in order.")
 
         self.__parking_map = parking_map
 
