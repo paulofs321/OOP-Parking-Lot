@@ -42,6 +42,18 @@ parking fee of a ParkingVehicle object.
 
 **exceptions.py** - Contains the custom exceptions for the system.
 
+## AutomatedParkingLot Class
+The parking system is managed by the `AutomatedParkingLot` object. It is responsible for keeping track of the vehicles
+that come into the parking lot. It has two main functions, the `park_vehicle` and `unpark_vehicle`.
+
+The `park_vehicle` function takes a `ParkingVehicle` object, the entrypoint, and the date of entry as a datetime object.
+When parking a vehicle, the function will assign the nearest possible `ParkingSlot` object from the
+entrypoint to the vehicle. The function will then return the assigned parking slot.
+
+The `unpark_vehicle` function takes a `Vehicle` object and the date of exit as a datetime object.
+The function will remove the vehicle from it's assigned parking slot and return the total fee for 
+the vehicle.
+
 ## Installation
 Before running the command below, make sure to have a Python 3.6+ interpreter and pip installed in your system.
 
@@ -63,16 +75,3 @@ slots = [Size.SMALL, Size.LARGE, Size.MEDIUM, Size.SMALL, Size.MEDIUM, Size.LARG
 distances = [(1, 2, 3), (1, 3, 2), (3, 2, 1), (2, 1, 3), (3, 1, 2), (2, 3, 1)]
 entrypoints = [EntryPoint.A, EntryPoint.B, EntryPoint.C]
 ```
-
-## Output
-### AutomatedParkingLot Class
-
-The automated parking lot has two main functions. The `park_vehicle` and `unpark_vehicle`.
-
-The `park_vehicle` function takes a ParkingVehicle object, the entrypoint, and the date of entry as a datetime object.
-When parking a vehicle, the function will assign the nearest possible ParkingSlot object from the
-entrypoint to the vehicle. The function will then return the assigned parking slot.
-
-The `unpark_vehicle` function takes a Vehicle object and the date of exit as a datetime object.
-The function will remove the vehicle from it's assigned parking slot and return the total fee for 
-the vehicle.
