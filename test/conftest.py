@@ -4,12 +4,12 @@ from src.db import Base
 import pytest
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def engine():
     return create_engine("sqlite:///parking_lot.db")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def tables(engine):
     Base.metadata.create_all(engine)
     yield
