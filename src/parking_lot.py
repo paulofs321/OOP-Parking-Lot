@@ -1,10 +1,11 @@
 from src.parking_slot import ParkingSlot
-from src.vehicles import Vehicle
+from src.vehicles import Vehicle, ParkingVehicle
 from src.fee_calculator import ParkingFeeCalculator
 from src.db import session
-from src.exceptions import NoMoreAvailableSpot, VehicleNotParked, InvalidEntryPoint
+from src.exceptions import *
 from src.enums import Size, EntryPoint, Hours
 
+from sqlalchemy.orm import make_transient, with_polymorphic
 from abc import ABC, abstractmethod
 from datetime import datetime
 
@@ -32,6 +33,11 @@ class AutomatedParkingLot(ParkingLot):
         self._parking_map = parking_map
         self._fee_calculator = ParkingFeeCalculator(flat_rate=40)
         self._parking_slots = self._initialize_parking_slots()
+        self._polymorphic_vehicle = with_polymorphic(ParkingVehicle, '*')
+
+    @property
+    def parking_slots(self):
+        return self._parking_slots
 
     @property
     def _parking_map(self):
@@ -101,16 +107,14 @@ class AutomatedParkingLot(ParkingLot):
         if entrypoint not in self._parking_map["entrypoints"]:
             raise InvalidEntryPoint("Invalid entrypoint")
 
-        nearest_slot = None
-
         # sort parking slots by distance from entrypoint and their size
-        self._parking_slots.sort(key=lambda x: (x.distances[entrypoint.value], x.size.value))
+        sorted_slots = sorted(self._parking_slots, key=lambda x: (x.distances[entrypoint.value], x.size.value))
 
-        for slot in self._parking_slots:
+        for slot in sorted_slots:
             if slot.isempty and vehicle_size.value <= slot.size.value:
                 return slot
 
-        return nearest_slot
+        return None
 
     def park_vehicle(self, vehicle: Vehicle, entrypoint: EntryPoint = EntryPoint.A,
                      date_of_entry: datetime = datetime.now()):
@@ -127,10 +131,13 @@ class AutomatedParkingLot(ParkingLot):
         if nearest_slot is None:
             raise NoMoreAvailableSpot("No more available parking slot for the vehicle.")
 
-        vehicle_query = session.query(Vehicle).filter(Vehicle.license_plate == vehicle.license_plate)
+        vehicle_query = session.query(self._polymorphic_vehicle).filter(Vehicle.license_plate == vehicle.license_plate)
         vehicle_parked_before = vehicle_query.one_or_none()
 
-        if vehicle_parked_before and vehicle_parked_before.date_of_exit is not None:  # checks if the vehicle has parked before and if it came back within an hour
+        if vehicle_parked_before:  # checks if the vehicle has parked before and if it came back within an hour
+            if vehicle_parked_before.date_of_exit is None:
+                raise VehicleAlreadyParked("The vehicle is already in the parking lot.")
+
             time_diff_last_parked = date_of_entry - vehicle_parked_before.date_of_exit
 
             if time_diff_last_parked.days < 0:  # check for proper date values
@@ -143,15 +150,18 @@ class AutomatedParkingLot(ParkingLot):
                 vehicle.charge_flat_rate = False
                 vehicle.flat_rate_hours = vehicle_parked_before.flat_rate_hours
 
-            vehicle_query.delete()  # delete the existing vehicle from the db so we can add the vehicle from the parameter
+            vehicle_parked_before.slot = None
+            session.delete(vehicle_parked_before)  # delete the existing vehicle from the db so we can add the vehicle from the parameter
 
         vehicle.date_of_entry = date_of_entry
 
+        make_transient(nearest_slot)
         nearest_slot.vehicle = vehicle  # assign vehicle to the parking slot
         nearest_slot.isempty = False
 
         session.add(vehicle)  # add the vehicle to the db
         session.add(nearest_slot)  # add parking slot with the assigned vehicle to the db
+
         session.commit()
 
         return nearest_slot
@@ -164,7 +174,8 @@ class AutomatedParkingLot(ParkingLot):
         :param date_of_exit: the date the vehicle left the parking slot
         :return: the total parking fee for the vehicle
         """
-        vehicle_query = session.query(Vehicle).filter(Vehicle.license_plate == vehicle.license_plate)
+        vehicle_query = session.query(self._polymorphic_vehicle).filter(self._polymorphic_vehicle.license_plate
+                                                                        == vehicle.license_plate)
         parked_vehicle = vehicle_query.one()
 
         if parked_vehicle.slot is None:  # makes sure that a vehicle being unparked has a parking slot
@@ -178,14 +189,15 @@ class AutomatedParkingLot(ParkingLot):
         total_fee = self._fee_calculator.calculate_fee(parked_vehicle)  # get the total fee
 
         slot_id = parked_vehicle.slot.slot_id
-        session.query(ParkingSlot).filter(ParkingSlot.slot_id == slot_id).delete()  # delete slot entry in the db
+
+        session.delete(parked_vehicle.slot)
 
         self._parking_slots[slot_id].isempty = True
         self._parking_slots[slot_id].vehicle = None  # empty the parking slot
 
         vehicle_query.update({
-            Vehicle.date_of_exit: date_of_exit,
-            Vehicle.flat_rate_hours: parked_vehicle.flat_rate_hours
+            ParkingVehicle.date_of_exit: date_of_exit,
+            ParkingVehicle.flat_rate_hours: parked_vehicle.flat_rate_hours
         })  # update the date of exit and remaining flat rate hours of the vehicle in the db
 
         session.commit()
