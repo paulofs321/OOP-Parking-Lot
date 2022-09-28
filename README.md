@@ -26,12 +26,40 @@ Parking fees are calculated using the rounding up method, e.g. 6.4 hours must be
 
 (c) A vehicle leaving the parking complex and returning within one hour based on their exit time must be charged a continuous rate, i.e. the vehicle must be considered as if it did not leave. Otherwise, rates must be implemented as described. For example, if a vehicle exits at 10:00 and returns at 10:30, continuous rate must apply.
 
-## 
+## SRC Files
+**parking_lot.py** - Contains the AutomatedParkingLot class that implements the requirements from the description.
+
+**vehicles.py** - Contains the Vehicle base model and its subclasses.
+
+**parking_slot.py** - Contains the ParkingSlot base model.
+
+**fee_calculator.py** - Contains the ParkingFeeCalculator class that computes the
+parking fee of a ParkingVehicle object.
+
+**db.py** - Contains the sqlalchemy db session used by the system.
+
+**enums.py** - Contains the enums for constants for the system.
+
+**exceptions.py** - Contains the custom exceptions for the system.
+
 ## Installation
-Before running the command below, make sure have a Python 3.6+ interpreter and pip installed in your system.
+Before running the command below, make sure to have a Python 3.6+ interpreter and pip installed in your system.
 
 ```commandline
 pip install requirements.txt
 ```
 
 ## Usage
+Run the command below to execute main.py and run the interactive command line program.
+
+```commandline
+python main.py
+```
+
+You can also change the mapping of the parking lot by modifying this part of main.py file:
+
+```
+slots = [Size.SMALL, Size.LARGE, Size.MEDIUM, Size.SMALL, Size.MEDIUM, Size.LARGE]
+distances = [(1, 2, 3), (1, 3, 2), (3, 2, 1), (2, 1, 3), (3, 1, 2), (2, 3, 1)]
+entrypoints = [EntryPoint.A, EntryPoint.B, EntryPoint.C]
+```
