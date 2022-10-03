@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 
 from src.enums import Size
 
-from sqlalchemy import Column, String, Enum, DateTime, Integer, Boolean
+from sqlalchemy import Column, String, Enum, DateTime, Integer, Float, Boolean
 from src.db import Base
 
 
@@ -27,10 +27,13 @@ class SizedVehicle(Vehicle):
 
 
 class ParkingVehicle(SizedVehicle):
+    date_of_first_entry = Column(DateTime)
     date_of_entry = Column(DateTime)
     date_of_exit = Column(DateTime, nullable=True)
     charge_flat_rate = Column(Boolean, default=True)
-    flat_rate_hours = Column(Integer, default=3)
+    #flat_rate_hours = Column(Integer, default=3)
+    total_hours_stayed = Column(Float, default=0)
+    hour_paid = Column(Integer, default=0)
     slot = relationship("ParkingSlot", back_populates="vehicle", uselist=False, cascade='all, delete-orphan')
 
     __mapper_args__ = {"polymorphic_identity": "parking_vehicle"}

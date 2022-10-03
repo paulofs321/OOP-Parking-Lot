@@ -163,10 +163,14 @@ class AutomatedParkingLot(ParkingLot):
             # if car came back within an hour, don't charge flat rate anymore and keep remaining flat rate hours
             if time_diff_hours <= Hours.WITHIN_CONTINUOUS.value:
                 vehicle.charge_flat_rate = False
-                vehicle.flat_rate_hours = vehicle_parked_before.flat_rate_hours
+                vehicle.hour_paid = vehicle_parked_before.hour_paid
+                vehicle.total_hours_stayed = vehicle_parked_before.total_hours_stayed
+                #vehicle.flat_rate_hours = vehicle_parked_before.flat_rate_hours
 
             vehicle_parked_before.slot = None
             session.delete(vehicle_parked_before)  # delete the existing vehicle from the db so we can add the vehicle from the parameter
+        else:
+            vehicle.date_of_first_entry = date_of_entry
 
         vehicle.date_of_entry = date_of_entry
 
@@ -212,7 +216,8 @@ class AutomatedParkingLot(ParkingLot):
 
         vehicle_query.update({
             ParkingVehicle.date_of_exit: date_of_exit,
-            ParkingVehicle.flat_rate_hours: parked_vehicle.flat_rate_hours
+            ParkingVehicle.hour_paid: parked_vehicle.hour_paid,
+            ParkingVehicle.total_hours_stayed: parked_vehicle.total_hours_stayed
         })  # update the date of exit and remaining flat rate hours of the vehicle in the db
 
         session.commit()
